@@ -17,7 +17,7 @@ public final class HttpHandlers {
                     httpExchange.sendResponseHeaders(400, -1);
                 }
 
-                httpExchange.sendResponseHeaders(200, -1);
+                httpExchange.sendResponseHeaders(201, -1);
             }
         };
     }
