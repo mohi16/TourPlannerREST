@@ -5,7 +5,7 @@ import org.easytours.tprest.dal.dao.TourDAO;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TestSimpleBusinessLogic {
@@ -24,8 +24,8 @@ public class TestSimpleBusinessLogic {
                 "Description",
                 "From",
                 "To",
-                10.5,
-                4200,
+                0,
+                0,
                 "Transport Type",
                 "Route Info"
         );
@@ -35,10 +35,10 @@ public class TestSimpleBusinessLogic {
         return new Tour(
                 "Tourname",
                 "Description",
-                "From",
+                "",
                 "To",
-                -10.5,
-                4200,
+                0,
+                0,
                 "Transport Type",
                 "Route Info"
         );
@@ -48,24 +48,40 @@ public class TestSimpleBusinessLogic {
     public void testAddTour() {
         Tour tour = getTour();
 
-        bl.addTour(tour);
+        try {
+            bl.addTour(tour);
+        } catch (Exception e) {
+            fail();
+        }
 
-        verify(tourDao).create(tour);
+        try {
+            verify(tourDao).create(tour);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void testAddTourFailDAO() {
         Tour tour = getTour();
-        doThrow(new IllegalArgumentException()).when(tourDao).create(tour);
+        try {
+            doThrow(new Exception()).when(tourDao).create(tour);
+        } catch (Exception e) {
+            fail();
+        }
 
         try {
             bl.addTour(tour);
             fail();
-        } catch (IllegalArgumentException e) { // other Exception?
-            //assertTrue(true);
+        } catch (Exception e) {
+
         }
 
-        verify(tourDao).create(tour);
+        try {
+            verify(tourDao).create(tour);
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
@@ -77,8 +93,210 @@ public class TestSimpleBusinessLogic {
             fail();
         } catch (IllegalArgumentException e) {
             //assertTrue(true);
+        } catch (Exception e) {
+            fail();
         }
 
-        verify(tourDao, times(0)).create(tour);
+        try {
+            verify(tourDao, times(0)).create(tour);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteTour() {
+        String tourname = "Tourname";
+
+        try {
+            bl.deleteTour(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).delete(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteTourFailDAO() {
+        String tourname = "Tourname";
+        try {
+            doThrow(new Exception()).when(tourDao).delete(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.deleteTour(tourname);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourDao).delete(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteTourFailVerify() {
+        String tourname = "";
+
+        try {
+            bl.deleteTour(tourname);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao, times(0)).delete(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+
+    @Test
+    public void testEditTour(){
+        Tour tour = getTour();
+        String tourname = "Tourname";
+
+        try {
+            bl.editTour(tourname, tour);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).update(tourname, tour);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testEditTourFailDAO(){
+        String tourname = "Tourname";
+        Tour tour = getTour();
+        try {
+            doThrow(new Exception()).when(tourDao).update(tourname, tour);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.editTour(tourname, tour);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourDao).update(tourname, tour);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testEditTourFailVerify() {
+        String tourname = "";
+        Tour tour = getBadTour();
+        try {
+            bl.editTour(tourname, tour);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao, times(0)).update(tourname, tour);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetTour() {
+        String tourname = "Tourname";
+        Tour expectedTour = getTour();
+        try {
+            when(tourDao.read(tourname)).thenReturn(expectedTour);
+        } catch (Exception e) {
+            fail();
+        }
+
+        Tour tour = null;
+        try {
+            tour = bl.getTour(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).read(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertEquals(expectedTour, tour);
+    }
+
+    @Test
+    public void testGetTourFailDAO(){
+        String tourname = "Tourname";
+
+        try {
+            doThrow(new Exception()).when(tourDao).read(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        Tour tour = null;
+        try {
+            tour = bl.getTour(tourname);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourDao).read(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertNull(tour);
+    }
+
+    @Test
+    public void testGetTourFailVerify() {
+        String tourname = "";
+
+        Tour tour = null;
+        try {
+            tour = bl.getTour(tourname);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao, times(0)).read(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertNull(tour);
     }
 }

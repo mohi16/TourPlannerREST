@@ -8,6 +8,10 @@ import java.sql.SQLException;
 
 public class Database {
 
+    public Database() throws ClassNotFoundException {
+        Class.forName("org.postgresql.Driver");
+    }
+
     public Connection connect() throws SQLException {
         return DriverManager.getConnection(
                 Config.getConfig().getDb().getHost(),

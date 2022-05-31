@@ -11,22 +11,37 @@ public class SimpleBusinessLogic implements BusinessLogic {
     }
 
     @Override
-    public void addTour(Tour tour) {
+    public void addTour(Tour tour) throws Exception {
+        if (!tour.isValid()) {
+            throw new IllegalArgumentException("The tour is not valid");
+        }
 
+        tourDao.create(tour);
     }
 
     @Override
-    public void deleteTour(String name) {
+    public void deleteTour(String name) throws Exception {
+        if (null == name || name.isEmpty()) {
+            throw new IllegalArgumentException("The name is null or not valid");
+        }
 
+        tourDao.delete(name);
     }
 
     @Override
-    public void editTour(String name, Tour newTour) {
-
+    public void editTour(String name, Tour newTour) throws Exception {
+        if(null == name || name.isEmpty() || !newTour.isValid()){
+            throw new IllegalArgumentException("The name or the tour is not valid");
+        }
+        tourDao.update(name, newTour);
     }
 
     @Override
-    public Tour getTour(String name) {
-        return null;
+    public Tour getTour(String name) throws Exception {
+        if (null == name || name.isEmpty()) {
+            throw new IllegalArgumentException("The name is null or not valid");
+        }
+
+        return tourDao.read(name);
     }
 }
