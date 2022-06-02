@@ -2,6 +2,7 @@ package org.easytours.tprest.bll;
 
 import org.easytours.tpmodel.Tour;
 import org.easytours.tprest.dal.dao.TourDAO;
+import org.easytours.tprest.utils.Pair;
 
 public class SimpleBusinessLogic implements BusinessLogic {
     TourDAO tourDao;
@@ -43,5 +44,19 @@ public class SimpleBusinessLogic implements BusinessLogic {
         }
 
         return tourDao.read(name);
+    }
+
+    @Override
+    public String[] getTourNames() throws Exception {
+        return tourDao.readTourNames();
+    }
+
+    @Override
+    public Tour getTourWithImage(String name) throws Exception {
+        if (null == name || name.isEmpty()) {
+            throw new IllegalArgumentException("The name is null or not valid");
+        }
+
+        return tourDao.readTourWithImage(name);
     }
 }

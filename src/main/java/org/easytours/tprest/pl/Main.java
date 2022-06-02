@@ -26,6 +26,8 @@ public final class Main {
         server.createContext("/delete/", creator.deleteTourHandler());
         server.createContext("/edit/", creator.editTourHandler());
         server.createContext("/tours/", creator.getTourHandler());
+        server.createContext("/tournames/", creator.getTourNamesHandler());
+        server.createContext("/tourimage/", creator.getTourWithImageHandler());
 
         System.out.println("STARTING Server at " + server.getAddress().getAddress() + " with Port " + server.getAddress().getPort());
         server.start();

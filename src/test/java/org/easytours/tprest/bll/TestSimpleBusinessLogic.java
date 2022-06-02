@@ -27,7 +27,8 @@ public class TestSimpleBusinessLogic {
                 0,
                 0,
                 "Transport Type",
-                "Route Info"
+                "Route Info",
+                ""
         );
     }
 
@@ -40,7 +41,8 @@ public class TestSimpleBusinessLogic {
                 0,
                 0,
                 "Transport Type",
-                "Route Info"
+                "Route Info",
+                ""
         );
     }
 
@@ -298,5 +300,51 @@ public class TestSimpleBusinessLogic {
             fail();
         }
         assertNull(tour);
+    }
+
+    @Test
+    public void testGetTourNames() {
+        String[] expectedTourNames = new String[] {"Tour1", "Tour2", "Tour3"};
+        try {
+            when(tourDao.readTourNames()).thenReturn(expectedTourNames);
+        } catch (Exception e) {
+            fail();
+        }
+
+        String[] tournames = null;
+        try {
+            tournames = bl.getTourNames();
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).readTourNames();
+        } catch (Exception e) {
+            fail();
+        }
+        assertArrayEquals(expectedTourNames, tournames);
+    }
+
+    @Test
+    public void testGetTourNamesFailDAO(){
+        try {
+            when(tourDao.readTourNames()).thenThrow(new Exception());
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.getTourNames();
+            fail();
+        } catch (Exception e) {
+            //assertTrue
+        }
+
+        try {
+            verify(tourDao).readTourNames();
+        } catch (Exception e) {
+            fail();
+        }
     }
 }

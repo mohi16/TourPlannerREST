@@ -1,12 +1,15 @@
 package org.easytours.tprest.pl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.easytours.tpmodel.Tour;
 import org.easytours.tpmodel.http.HttpMethod;
 import org.easytours.tpmodel.http.HttpStatusCode;
 import org.easytours.tprest.bll.BusinessLogic;
+import org.easytours.tprest.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
@@ -145,6 +148,80 @@ public final class HttpHandlerCreator {
                 httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
                 OutputStream os = httpExchange.getResponseBody();
                 os.write(body.getBytes());
+                os.close();
+            }
+        };
+    }
+
+    public HttpHandler getTourNamesHandler() {
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET TourNames");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                String[] tournames = null;
+                try {
+                    tournames = bl.getTourNames();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String body = objectMapper.writeValueAsString(tournames);
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(body.getBytes());
+                os.close();
+
+            }
+        };
+    }
+
+    public HttpHandler getTourWithImageHandler() {
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET TourWithImage");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+
+                Tour tour = null;
+                try {
+                    String decode = processPathString(httpExchange.getRequestURI().getPath(), "/tourimage/");
+                    System.out.println(decode);
+                    tour = bl.getTourWithImage(processPathString(httpExchange.getRequestURI().getPath(), "/tourimage/"));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                //tour.setImage("IMAGE");
+                String body = objectMapper.writeValueAsString(tour);
+                System.out.println("body");
+                System.out.println(body);
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(body.getBytes());
+                os.flush();
                 os.close();
             }
         };

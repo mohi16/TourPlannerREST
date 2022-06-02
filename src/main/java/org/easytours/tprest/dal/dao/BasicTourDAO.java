@@ -1,12 +1,20 @@
 package org.easytours.tprest.dal.dao;
 
 import org.easytours.tpmodel.Tour;
+import org.easytours.tpmodel.utils.Triple;
 import org.easytours.tprest.dal.Database;
+import org.easytours.tprest.dal.http.HttpHandler;
+import org.easytours.tprest.utils.Pair;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
 
 public class BasicTourDAO implements TourDAO {
     Database db;
@@ -24,6 +32,11 @@ public class BasicTourDAO implements TourDAO {
         ps.setDouble(6, tour.getDistance());
         ps.setLong(7, tour.getEstTime());
         ps.setString(8, tour.getRouteInfo());
+    }
+
+    private String getMapQuest(String from, String to) throws Exception {
+        //Pair<String, String> res = HttpHandler.sendMapQuestRequest(from, to);
+        return null;
     }
 
     @Override
@@ -73,7 +86,8 @@ public class BasicTourDAO implements TourDAO {
                 rs.getDouble(6),
                 rs.getLong(7),
                 rs.getString(5),
-                rs.getString(8)
+                rs.getString(8),
+                ""
             );
             rs.close();
             return tour;
@@ -87,14 +101,14 @@ public class BasicTourDAO implements TourDAO {
         try(Connection con = db.connect()){
             String query = "UPDATE tours SET t_name = ?, t_description = ?, t_from = ?, t_to = ?, t_transport_type = ?, t_distance = ?, t_est_time = ?, t_route_info = ? WHERE t_name = ?";
             PreparedStatement ps = con.prepareStatement(query);
-            /*ps.setString(1, newTour.getName());
+            /* ps.setString(1, newTour.getName());
             ps.setString(2, newTour.getDescription());
             ps.setString(3, newTour.getFrom());
             ps.setString(4, newTour.getTo());
             ps.setString(5, newTour.getTransportType());
             ps.setDouble(6, newTour.getDistance());
             ps.setLong(7, newTour.getEstTime());
-            ps.setString(8, newTour.getRouteInfo());*/
+            ps.setString(8, newTour.getRouteInfo()); */
             fillPsWithTour(ps, newTour);
             ps.setString(9, name);
             ps.execute();
@@ -121,5 +135,34 @@ public class BasicTourDAO implements TourDAO {
         catch (SQLException e) {
             throw e;
         }
+    }
+
+    @Override
+    public String[] readTourNames() throws Exception{
+        try(Connection con = db.connect()) {
+            String query = "SELECT t_name FROM tours";
+            PreparedStatement ps = con.prepareStatement(query);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new Exception("Cannot get tour");
+            }
+            List<String> tournames = new ArrayList<>();
+            while(rs.next()){
+                tournames.add(rs.getString(1));
+            }
+            rs.close();
+            return tournames.toArray(new String[]{});
+        }
+    }
+
+    @Override
+    public Tour readTourWithImage(String name) throws Exception {
+        Tour tour = read(name);
+        Triple<Double, Long, String> mapQuestRes = HttpHandler.sendMapQuestRequest(tour.getFrom(), tour.getTo());
+        tour.setDistance(mapQuestRes.getValue1());
+        tour.setEstTime(mapQuestRes.getValue2());
+        tour.setImage(Base64.getEncoder().encodeToString(mapQuestRes.getValue3().getBytes(StandardCharsets.UTF_8)));
+
+        return tour;
     }
 }
