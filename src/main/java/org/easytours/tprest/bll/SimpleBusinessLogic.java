@@ -1,14 +1,18 @@
 package org.easytours.tprest.bll;
 
 import org.easytours.tpmodel.Tour;
+import org.easytours.tpmodel.TourLog;
 import org.easytours.tprest.dal.dao.TourDAO;
+import org.easytours.tprest.dal.dao.TourLogDAO;
 import org.easytours.tprest.utils.Pair;
 
 public class SimpleBusinessLogic implements BusinessLogic {
     TourDAO tourDao;
+    TourLogDAO tourLogDao;
 
-    public SimpleBusinessLogic(TourDAO tourDao) {
+    public SimpleBusinessLogic(TourDAO tourDao, TourLogDAO tourLogDao) {
         this.tourDao = tourDao;
+        this.tourLogDao = tourLogDao;
     }
 
     @Override
@@ -58,5 +62,32 @@ public class SimpleBusinessLogic implements BusinessLogic {
         }
 
         return tourDao.readTourWithImage(name);
+    }
+
+    @Override
+    public void addTourLog(String tourName, TourLog tourLog) throws Exception {
+        if (!tourLog.isValid() || null == tourName || tourName.isEmpty()) {
+            throw new IllegalArgumentException("The tour is not valid");
+        }
+
+        tourLogDao.create(tourName, tourLog);
+    }
+
+    @Override
+    public void editTourLog(int id, TourLog newLog) throws Exception {
+        if(!newLog.isValid()){
+            throw new IllegalArgumentException("The tour is not valid");
+        }
+        tourLogDao.update(id, newLog);
+    }
+
+    @Override
+    public void deleteTourLog(int id) throws Exception {
+        tourLogDao.delete(id);
+    }
+
+    @Override
+    public TourLog getTourLog(int id) throws Exception {
+        return tourLogDao.read(id);
     }
 }

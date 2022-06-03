@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.easytours.tpmodel.Tour;
+import org.easytours.tpmodel.TourLog;
 import org.easytours.tpmodel.http.HttpMethod;
 import org.easytours.tpmodel.http.HttpStatusCode;
 import org.easytours.tprest.bll.BusinessLogic;
@@ -230,4 +231,135 @@ public final class HttpHandlerCreator {
 
         return URLDecoder.decode(path, StandardCharsets.UTF_8);
     }
+
+    public HttpHandler addTourLogHandler() {
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("ADD Tourlog");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.POST.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    bl.addTourLog(processPathString(httpExchange.getRequestURI().getPath(),"/addLog/"), objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.CREATED.getCode(), -1);
+            }
+        };
+    }
+
+    public HttpHandler editTourLogHandler() {
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("EDIT Tour");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.PUT.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    bl.editTourLog(
+                            Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/editLog/")),
+                            objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class)
+                    );
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), -1);
+            }
+        };
+    }
+    public HttpHandler deleteTourLogHandler(){
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("DELETE Tour");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.DELETE.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                try {
+                    bl.deleteTourLog(Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/deleteLog/")));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), -1);
+            }
+        };
+
+    }
+
+    public HttpHandler getTourLogHandler() {
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET Tour");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                TourLog tourLog = null;
+                try {
+                    String decode = processPathString(httpExchange.getRequestURI().getPath(), "/logs/");
+                    System.out.println(decode);
+                    tourLog = bl.getTourLog(Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/logs/")));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String body = objectMapper.writeValueAsString(tourLog);
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(body.getBytes());
+                os.close();
+            }
+        };
+    }
 }
+

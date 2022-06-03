@@ -17,10 +17,13 @@ import java.util.List;
 
 
 public class BasicTourDAO implements TourDAO {
-    Database db;
+    private Database db;
 
-    public BasicTourDAO(Database db) {
+    private TourLogDAO tourLogDao;
+
+    public BasicTourDAO(Database db, TourLogDAO tourLogDao) {
         this.db = db;
+        this.tourLogDao = tourLogDao;
     }
 
     private void fillPsWithTour(PreparedStatement ps, Tour tour) throws SQLException {
@@ -162,6 +165,7 @@ public class BasicTourDAO implements TourDAO {
         tour.setDistance(mapQuestRes.getValue1());
         tour.setEstTime(mapQuestRes.getValue2());
         tour.setImage(Base64.getEncoder().encodeToString(mapQuestRes.getValue3()));
+        tour.setTourLogs(tourLogDao.readAll(tour.getName()));
 
         return tour;
     }

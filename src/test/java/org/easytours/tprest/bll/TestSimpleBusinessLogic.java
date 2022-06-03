@@ -1,7 +1,9 @@
 package org.easytours.tprest.bll;
 
 import org.easytours.tpmodel.Tour;
+import org.easytours.tpmodel.TourLog;
 import org.easytours.tprest.dal.dao.TourDAO;
+import org.easytours.tprest.dal.dao.TourLogDAO;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,12 +12,14 @@ import static org.mockito.Mockito.*;
 
 public class TestSimpleBusinessLogic {
     private TourDAO tourDao;
+    private TourLogDAO tourLogDao;
     private BusinessLogic bl;
 
     @Before
     public void init() {
         tourDao = mock(TourDAO.class);
-        bl = new SimpleBusinessLogic(tourDao);
+        tourLogDao = mock(TourLogDAO.class);
+        bl = new SimpleBusinessLogic(tourDao, tourLogDao);
     }
 
     private Tour getTour() {
@@ -43,6 +47,26 @@ public class TestSimpleBusinessLogic {
                 "Transport Type",
                 "Route Info",
                 ""
+        );
+    }
+
+    private TourLog getTourLog() {
+        return new TourLog(
+                "2022-05-06T12:13:14",
+                "Some comment",
+                2,
+                2001,
+                4
+        );
+    }
+
+    private TourLog getBadTourLog() {
+        return new TourLog(
+                "2022-05-06T12:13:14",
+                "Some comment",
+                2,
+                2001,
+                0
         );
     }
 
@@ -376,7 +400,7 @@ public class TestSimpleBusinessLogic {
     }
 
     @Test
-    public void testGetTourWithFailDAO(){
+    public void testGetTourWithImageFailDAO(){
         String tourname = "Tourname";
 
         try {
@@ -421,5 +445,225 @@ public class TestSimpleBusinessLogic {
             fail();
         }
         assertNull(tour);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////
+
+    @Test
+    public void testAddTourLog() {
+        String tourname = "Tourname";
+        TourLog tourLog = getTourLog();
+
+        try {
+            bl.addTourLog(tourname, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao).create(tourname, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTourLogFailDAO() {
+        String tourname = "Tourname";
+        TourLog tourLog = getTourLog();
+        try {
+            doThrow(new Exception()).when(tourLogDao).create(tourname, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.addTourLog(tourname, tourLog);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourLogDao).create(tourname, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testAddTourLogFailVerify() {
+        String tourname = "Tourname";
+        TourLog tourLog = getBadTourLog();
+
+        try {
+            bl.addTourLog(tourname, tourLog);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao, times(0)).create(tourname, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteTourLog() {
+        int id = 1001;
+
+        try {
+            bl.deleteTourLog(id);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao).delete(id);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testDeleteTourLogFailDAO() {
+        int id = 1001;
+        try {
+            doThrow(new Exception()).when(tourLogDao).delete(id);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.deleteTourLog(id);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourLogDao).delete(id);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testEditTourLog(){
+        TourLog tourLog = getTourLog();
+        int id = 1001;
+
+        try {
+            bl.editTourLog(id, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao).update(id, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testEditTourLogFailDAO(){
+        int id = 1001;
+        TourLog tourLog = getTourLog();
+        try {
+            doThrow(new Exception()).when(tourLogDao).update(id, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.editTourLog(id, tourLog);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourLogDao).update(id, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testEditTourLogFailVerify() {
+        int id = 1001;
+        TourLog tourLog = getBadTourLog();
+        try {
+            bl.editTourLog(id, tourLog);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao, times(0)).update(id, tourLog);
+        } catch (Exception e) {
+            fail();
+        }
+    }
+
+    @Test
+    public void testGetTourLog() {
+        int id = 1001;
+        TourLog expectedTourLog = getTourLog();
+        try {
+            when(tourLogDao.read(id)).thenReturn(expectedTourLog);
+        } catch (Exception e) {
+            fail();
+        }
+
+        TourLog tourLog = null;
+        try {
+            tourLog = bl.getTourLog(id);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourLogDao).read(id);
+        } catch (Exception e) {
+            fail();
+        }
+        assertEquals(expectedTourLog, tourLog);
+    }
+
+    @Test
+    public void testGetTourLogFailDAO(){
+        int id = 1001;
+
+        try {
+            doThrow(new Exception()).when(tourLogDao).read(id);
+        } catch (Exception e) {
+            fail();
+        }
+
+        TourLog tourLog = null;
+        try {
+            tourLog = bl.getTourLog(id);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourLogDao).read(id);
+        } catch (Exception e) {
+            fail();
+        }
+        assertNull(tourLog);
     }
 }
