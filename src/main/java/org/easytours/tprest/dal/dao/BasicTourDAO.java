@@ -158,10 +158,10 @@ public class BasicTourDAO implements TourDAO {
     @Override
     public Tour readTourWithImage(String name) throws Exception {
         Tour tour = read(name);
-        Triple<Double, Long, String> mapQuestRes = HttpHandler.sendMapQuestRequest(tour.getFrom(), tour.getTo());
+        Triple<Double, Long, byte[]> mapQuestRes = HttpHandler.sendMapQuestRequest(tour.getFrom(), tour.getTo());
         tour.setDistance(mapQuestRes.getValue1());
         tour.setEstTime(mapQuestRes.getValue2());
-        tour.setImage(Base64.getEncoder().encodeToString(mapQuestRes.getValue3().getBytes(StandardCharsets.UTF_8)));
+        tour.setImage(Base64.getEncoder().encodeToString(mapQuestRes.getValue3()));
 
         return tour;
     }

@@ -347,4 +347,79 @@ public class TestSimpleBusinessLogic {
             fail();
         }
     }
+
+    @Test
+    public void testGetTourWithImage() {
+        String tourname = "Tourname";
+        Tour expectedTour = getTour();
+        expectedTour.setDistance(10.5);
+        expectedTour.setEstTime(1002);
+        try {
+            when(tourDao.readTourWithImage(tourname)).thenReturn(expectedTour);
+        } catch (Exception e) {
+            fail();
+        }
+
+        Tour tour = null;
+        try {
+            tour = bl.getTourWithImage(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).readTourWithImage(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertEquals(expectedTour, tour);
+    }
+
+    @Test
+    public void testGetTourWithFailDAO(){
+        String tourname = "Tourname";
+
+        try {
+            doThrow(new Exception()).when(tourDao).readTourWithImage(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        Tour tour = null;
+        try {
+            tour = bl.getTourWithImage(tourname);
+            fail();
+        } catch (Exception e) {
+
+        }
+
+        try {
+            verify(tourDao).readTourWithImage(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertNull(tour);
+    }
+
+    @Test
+    public void testGetTourWithImageFailVerify() {
+        String tourname = "";
+
+        Tour tour = null;
+        try {
+            tour = bl.getTourWithImage(tourname);
+            fail();
+        } catch (IllegalArgumentException e) {
+            //assertTrue(true);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao, times(0)).readTourWithImage(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+        assertNull(tour);
+    }
 }

@@ -214,10 +214,7 @@ public final class HttpHandlerCreator {
                 }
 
                 ObjectMapper objectMapper = new ObjectMapper();
-                //tour.setImage("IMAGE");
                 String body = objectMapper.writeValueAsString(tour);
-                System.out.println("body");
-                System.out.println(body);
                 httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
                 OutputStream os = httpExchange.getResponseBody();
                 os.write(body.getBytes());

@@ -25,12 +25,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
 public class HttpHandler {
-    public static Triple<Double, Long, String> sendMapQuestRequest(String from, String to) throws Exception {
+    public static Triple<Double, Long, byte[]> sendMapQuestRequest(String from, String to) throws Exception {
         HttpResponse<String> jsonResponse = sendRequest(
                 Config.getConfig().getMapquestDirectionsUrl() +
                         "?key=" + Config.getConfig().getMapquestApiKey() +
                         "&from=" + from +
-                        "&to=" + to,
+                        "&to=" + to +
+                        "&unit=k",
                 HttpMethod.GET
         );
         if (!HttpStatusCode.isSame(HttpStatusCode.OK, jsonResponse.statusCode())) {
@@ -71,7 +72,7 @@ public class HttpHandler {
             }
         }
 
-        HttpResponse<String> imageResponse = sendRequest(
+        HttpResponse<byte[]> imageResponse = sendRequestBinary(
                 Config.getConfig().getMapquestStaticMapUrl() +
                         "?key=" + Config.getConfig().getMapquestApiKey() +
                         "&session=" + sessionId,
@@ -90,10 +91,10 @@ public class HttpHandler {
         return client.send(getRequest(url, method.name(), HttpRequest.BodyPublishers.noBody()), HttpResponse.BodyHandlers.ofString());
     }
 
-    public static HttpResponse<Path> sendRequestFile(String url, HttpMethod method) throws Exception {
+    public static HttpResponse<byte[]> sendRequestBinary(String url, HttpMethod method) throws Exception {
         HttpClient client = getClient();
 
-        return client.send(getRequest(url, method.name(), HttpRequest.BodyPublishers.noBody()), HttpResponse.BodyHandlers.ofFile(Path.of("tmpImage.png")));
+        return client.send(getRequest(url, method.name(), HttpRequest.BodyPublishers.noBody()), HttpResponse.BodyHandlers.ofByteArray());
     }
 
     private static HttpClient getClient() {
