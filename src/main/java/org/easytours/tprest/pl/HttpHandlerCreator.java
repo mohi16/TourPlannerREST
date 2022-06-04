@@ -3,6 +3,11 @@ package org.easytours.tprest.pl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.itextpdf.kernel.colors.Color;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.easytours.tpmodel.Tour;
@@ -16,6 +21,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public final class HttpHandlerCreator {
     private final BusinessLogic bl;
@@ -245,8 +251,9 @@ public final class HttpHandlerCreator {
                 }
 
                 ObjectMapper objectMapper = new ObjectMapper();
+                int id;
                 try {
-                    bl.addTourLog(processPathString(httpExchange.getRequestURI().getPath(),"/addLog/"), objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class));
+                    id = bl.addTourLog(processPathString(httpExchange.getRequestURI().getPath(),"/addLog/"), objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -258,9 +265,14 @@ public final class HttpHandlerCreator {
                     return;
                 }
 
-                httpExchange.sendResponseHeaders(HttpStatusCode.CREATED.getCode(), -1);
+                String body = objectMapper.writeValueAsString(id);
+                httpExchange.sendResponseHeaders(HttpStatusCode.CREATED.getCode(), body.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(body.getBytes());
+                os.close();
             }
         };
+
     }
 
     public HttpHandler editTourLogHandler() {
@@ -357,6 +369,67 @@ public final class HttpHandlerCreator {
                 httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
                 OutputStream os = httpExchange.getResponseBody();
                 os.write(body.getBytes());
+                os.close();
+            }
+        };
+    }
+
+    private Locale getLocale(String query) {
+        if (null == query) {
+            return Locale.ENGLISH;
+        }
+        if (query.contains("lang=")) {
+            int idx = query.indexOf("lang=") + 5;
+            String loc = query.substring(idx,  Math.max(query.indexOf('&', idx), query.length()));
+
+            if ("de".equals(loc)) {
+                return Locale.GERMAN;
+            }
+        }
+
+        return Locale.ENGLISH;
+    }
+
+    public HttpHandler getSingleReportHandler(){
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET Single Report");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                /*ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                PdfWriter writer = new PdfWriter(byteArrayOutputStream);
+                PdfDocument pdfDoc = new PdfDocument(writer);
+                Document doc = new Document(pdfDoc);
+                Paragraph paragraph = new Paragraph("igrnedine text")
+                        .setFontSize(14);
+                doc.add(paragraph);
+                doc.close();*/
+                byte[] bytes;
+                try {
+                    bytes = bl.generateSingleReport(processPathString(httpExchange.getRequestURI().getPath(), "/singleReport/"), getLocale(httpExchange.getRequestURI().getQuery()));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+/*                ObjectMapper objectMapper = new ObjectMapper();
+                String body = objectMapper.writeValueAsString(tourLog);*/
+                httpExchange.getResponseHeaders().set("Content-Type", "application/pdf");
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), bytes.length);
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(bytes);
                 os.close();
             }
         };

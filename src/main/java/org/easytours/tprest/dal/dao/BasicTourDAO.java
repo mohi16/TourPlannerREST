@@ -146,9 +146,6 @@ public class BasicTourDAO implements TourDAO {
             String query = "SELECT t_name FROM tours";
             PreparedStatement ps = con.prepareStatement(query);
             ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                throw new Exception("Cannot get tour");
-            }
             List<String> tournames = new ArrayList<>();
             while(rs.next()){
                 tournames.add(rs.getString(1));
@@ -169,4 +166,5 @@ public class BasicTourDAO implements TourDAO {
 
         return tour;
     }
+
 }

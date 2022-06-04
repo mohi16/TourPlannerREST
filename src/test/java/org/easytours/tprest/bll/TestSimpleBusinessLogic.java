@@ -7,19 +7,23 @@ import org.easytours.tprest.dal.dao.TourLogDAO;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Locale;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TestSimpleBusinessLogic {
     private TourDAO tourDao;
     private TourLogDAO tourLogDao;
+    private ReportGenerator reportGenerator;
     private BusinessLogic bl;
 
     @Before
     public void init() {
         tourDao = mock(TourDAO.class);
         tourLogDao = mock(TourLogDAO.class);
-        bl = new SimpleBusinessLogic(tourDao, tourLogDao);
+        reportGenerator = mock(ReportGenerator.class);
+        bl = new SimpleBusinessLogic(tourDao, tourLogDao, reportGenerator);
     }
 
     private Tour getTour() {
@@ -455,15 +459,24 @@ public class TestSimpleBusinessLogic {
     public void testAddTourLog() {
         String tourname = "Tourname";
         TourLog tourLog = getTourLog();
-
+        int expectedId = 1001;
         try {
-            bl.addTourLog(tourname, tourLog);
+            when(tourLogDao.create(tourname, tourLog)).thenReturn(expectedId);
+        } catch (Exception e) {
+            fail();
+        }
+
+        int id = 0;
+        try {
+            id = bl.addTourLog(tourname, tourLog);
+
         } catch (Exception e) {
             fail();
         }
 
         try {
             verify(tourLogDao).create(tourname, tourLog);
+            assertEquals(expectedId, id);
         } catch (Exception e) {
             fail();
         }
@@ -665,5 +678,65 @@ public class TestSimpleBusinessLogic {
             fail();
         }
         assertNull(tourLog);
+    }
+
+    @Test
+    public void testGenerateSingleReport() {
+        String tourname = "Tourname";
+        Tour tour = getTour();
+        tour.setDistance(10.5);
+        tour.setEstTime(1002);
+        byte[] expectedBytes = new byte[] {0, 1, 2, 3};
+        try {
+            when(tourDao.readTourWithImage(tourname)).thenReturn(tour);
+            when(reportGenerator.singleReport(tour)).thenReturn(expectedBytes);
+        } catch (Exception e) {
+            fail();
+        }
+
+        byte[] bytes = null;
+        try {
+            bytes = bl.generateSingleReport(tourname);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            verify(tourDao).readTourWithImage(tourname);
+            verify(reportGenerator).singleReport(tour);
+        } catch (Exception e) {
+            fail();
+        }
+        assertArrayEquals(expectedBytes, bytes);
+    }
+
+    @Test
+    public void testGenerateSingleReportFailDao() {
+        String tourname = "Tourname";
+        Tour tour = getTour();
+        tour.setDistance(10.5);
+        tour.setEstTime(1002);
+        Locale locale = Locale.ENGLISH;
+        byte[] expectedBytes = new byte[] {0, 1, 2, 3};
+        try {
+            when(tourDao.readTourWithImage(tourname)).thenThrow(new Exception());
+            //when(reportGenerator.singleReport(tour)).thenReturn(expectedBytes);
+        } catch (Exception e) {
+            fail();
+        }
+
+        try {
+            bl.generateSingleReport(tourname, locale);
+            fail();
+        } catch (Exception e) {
+            // true
+        }
+
+        try {
+            verify(tourDao).readTourWithImage(tourname);
+            verify(reportGenerator, times(0)).singleReport(tour, locale);
+        } catch (Exception e) {
+            fail();
+        }
     }
 }

@@ -37,11 +37,11 @@ public class BasicTourLogDAO implements TourLogDAO {
     }
 
     @Override
-    public void create(String tourName, TourLog tourLog) throws Exception {
+    public int create(String tourName, TourLog tourLog) throws Exception {
         int id = getTourId(tourName);
 
         try (Connection con = db.connect()) {
-            String query = "INSERT INTO logs (l_date, l_comment, l_difficulty, l_total_time, l_rating, t_id) VALUES (?,?,?,?,?,?)";
+            String query = "INSERT INTO logs (l_date, l_comment, l_difficulty, l_total_time, l_rating, t_id) VALUES (?,?,?,?,?,?) RETURNING l_id";
             PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, tourLog.getDateTime());
             ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse(tourLog.getDateTime(), DateTimeFormatter.ofPattern("d.M.y H:m:s"))));
@@ -51,11 +51,14 @@ public class BasicTourLogDAO implements TourLogDAO {
             ps.setInt(5, tourLog.getRating());
             ps.setInt(6, id);
 
-            ps.execute();
+            ResultSet rs = ps.executeQuery();
 
-            if (ps.getUpdateCount() <= 0) {
-                throw new Exception("Can not add Tour");
+            if(!rs.next()){
+                throw new Exception("Can not add Tour Log");
             }
+            int l_id = rs.getInt(1);
+            rs.close();
+            return l_id;
         } catch (SQLException e) {
             throw e;
         }
@@ -74,7 +77,7 @@ public class BasicTourLogDAO implements TourLogDAO {
                 throw new Exception("Cannot get logs");
             }
             TourLog tourLog = new TourLog(
-                    rs.getString(1),
+                    convertDbTimeStampToString(rs.getString(1)),
                     rs.getString(2),
                     rs.getInt(3),
                     rs.getLong(4),
@@ -134,7 +137,7 @@ public class BasicTourLogDAO implements TourLogDAO {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 TourLog tourLog = new TourLog(
-                        rs.getString(1),
+                        convertDbTimeStampToString(rs.getString(1)),
                         rs.getString(2),
                         rs.getInt(3),
                         rs.getLong(4),
@@ -151,5 +154,9 @@ public class BasicTourLogDAO implements TourLogDAO {
         }
 
         return tourLogs.toArray(new TourLog[]{});
+    }
+
+    public String convertDbTimeStampToString(String dbDateTime){
+        return LocalDateTime.parse(dbDateTime, DateTimeFormatter.ofPattern("y-M-d H:m:s")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
     }
 }

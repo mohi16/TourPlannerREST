@@ -16,9 +16,11 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -28,9 +30,9 @@ public class HttpHandler {
     public static Triple<Double, Long, byte[]> sendMapQuestRequest(String from, String to) throws Exception {
         HttpResponse<String> jsonResponse = sendRequest(
                 Config.getConfig().getMapquestDirectionsUrl() +
-                        "?key=" + Config.getConfig().getMapquestApiKey() +
-                        "&from=" + from +
-                        "&to=" + to +
+                        "?key=" + URLEncoder.encode(Config.getConfig().getMapquestApiKey(),StandardCharsets.UTF_8) +
+                        "&from=" + URLEncoder.encode(from, StandardCharsets.UTF_8) +
+                        "&to=" + URLEncoder.encode(to, StandardCharsets.UTF_8) +
                         "&unit=k",
                 HttpMethod.GET
         );
@@ -74,8 +76,8 @@ public class HttpHandler {
 
         HttpResponse<byte[]> imageResponse = sendRequestBinary(
                 Config.getConfig().getMapquestStaticMapUrl() +
-                        "?key=" + Config.getConfig().getMapquestApiKey() +
-                        "&session=" + sessionId,
+                        "?key=" + URLEncoder.encode(Config.getConfig().getMapquestApiKey(),StandardCharsets.UTF_8) +
+                        "&session=" + URLEncoder.encode(sessionId, StandardCharsets.UTF_8),
                 HttpMethod.GET
         );
         if (!HttpStatusCode.isSame(HttpStatusCode.OK, imageResponse.statusCode())) {

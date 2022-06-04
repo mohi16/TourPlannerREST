@@ -6,13 +6,17 @@ import org.easytours.tprest.dal.dao.TourDAO;
 import org.easytours.tprest.dal.dao.TourLogDAO;
 import org.easytours.tprest.utils.Pair;
 
+import java.util.Locale;
+
 public class SimpleBusinessLogic implements BusinessLogic {
     TourDAO tourDao;
     TourLogDAO tourLogDao;
+    ReportGenerator reportGenerator;
 
-    public SimpleBusinessLogic(TourDAO tourDao, TourLogDAO tourLogDao) {
+    public SimpleBusinessLogic(TourDAO tourDao, TourLogDAO tourLogDao, ReportGenerator reportGenerator) {
         this.tourDao = tourDao;
         this.tourLogDao = tourLogDao;
+        this.reportGenerator = reportGenerator;
     }
 
     @Override
@@ -65,12 +69,12 @@ public class SimpleBusinessLogic implements BusinessLogic {
     }
 
     @Override
-    public void addTourLog(String tourName, TourLog tourLog) throws Exception {
+    public int addTourLog(String tourName, TourLog tourLog) throws Exception {
         if (!tourLog.isValid() || null == tourName || tourName.isEmpty()) {
             throw new IllegalArgumentException("The tour is not valid");
         }
 
-        tourLogDao.create(tourName, tourLog);
+        return tourLogDao.create(tourName, tourLog);
     }
 
     @Override
@@ -89,5 +93,20 @@ public class SimpleBusinessLogic implements BusinessLogic {
     @Override
     public TourLog getTourLog(int id) throws Exception {
         return tourLogDao.read(id);
+    }
+
+    @Override
+    public byte[] generateSingleReport(String tourName, Locale locale) throws Exception {
+        if(null == tourName || tourName.isEmpty()) {
+            throw new IllegalArgumentException("no tourname!");
+        }
+
+        Tour tour = tourDao.readTourWithImage(tourName);
+        return reportGenerator.singleReport(tour, locale);
+    }
+
+    @Override
+    public byte[] generateSummaryReport() throws Exception {
+        return new byte[0];
     }
 }

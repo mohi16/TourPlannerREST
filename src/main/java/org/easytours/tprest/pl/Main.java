@@ -1,6 +1,7 @@
 package org.easytours.tprest.pl;
 
 import com.sun.net.httpserver.HttpServer;
+import org.easytours.tprest.bll.ReportGenerator;
 import org.easytours.tprest.bll.SimpleBusinessLogic;
 import org.easytours.tprest.config.Config;
 import org.easytours.tprest.dal.Database;
@@ -25,8 +26,9 @@ public final class Main {
 
         TourLogDAO tourLogDao = new BasicTourLogDAO(db);
         TourDAO tourDao = new BasicTourDAO(db, tourLogDao);
+        ReportGenerator reportGenerator = new ReportGenerator();
 
-        HttpHandlerCreator creator = new HttpHandlerCreator(new SimpleBusinessLogic(tourDao, tourLogDao));
+        HttpHandlerCreator creator = new HttpHandlerCreator(new SimpleBusinessLogic(tourDao, tourLogDao, reportGenerator));
         HttpServer server = HttpServer.create(new InetSocketAddress(Config.getConfig().getPort()), 10);
 
         server.createContext("/add/", creator.addTourHandler());
@@ -39,6 +41,8 @@ public final class Main {
         server.createContext("/deleteLog/", creator.deleteTourLogHandler());
         server.createContext("/editLog/", creator.editTourLogHandler());
         server.createContext("/logs/", creator.getTourLogHandler());
+        server.createContext("/singleReport/", creator.getSingleReportHandler());
+//        server.createContext("/summaryReport/", creator.getSummaryReportHandler());
 
         System.out.println("STARTING Server at " + server.getAddress().getAddress() + " with Port " + server.getAddress().getPort());
         server.start();

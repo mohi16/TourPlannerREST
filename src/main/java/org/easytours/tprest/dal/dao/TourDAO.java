@@ -13,6 +13,5 @@ public interface TourDAO {
     void delete(String name) throws Exception;
     String[] readTourNames() throws Exception;
     Tour readTourWithImage(String name) throws Exception;
-    
-    
+
 }
