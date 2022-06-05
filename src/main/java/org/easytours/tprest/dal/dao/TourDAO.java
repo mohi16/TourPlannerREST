@@ -14,4 +14,10 @@ public interface TourDAO {
     String[] readTourNames() throws Exception;
     Tour readTourWithImage(String name) throws Exception;
 
+    Tour[] readAll() throws Exception;
+
+    void createAll(Tour[] tours) throws Exception;
+
+    String[] readTourNames(String filter) throws Exception;
+
 }

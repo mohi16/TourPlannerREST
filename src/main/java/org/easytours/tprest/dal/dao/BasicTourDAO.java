@@ -155,6 +155,23 @@ public class BasicTourDAO implements TourDAO {
         }
     }
 
+    private void insertDistanceAndTime(String tourname, double distance, long time) throws Exception {
+        try(Connection con = db.connect()){
+            String query = "UPDATE tours SET t_distance = ?, t_est_time = ? WHERE t_name = ?";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setDouble(1, distance);
+            ps.setLong(2, time);
+            ps.setString(3, tourname);
+            ps.execute();
+            if (ps.getUpdateCount() <= 0) {
+                throw new Exception("Can not edit Tour");
+            }
+        }
+        catch(SQLException e){
+            throw e;
+        }
+    }
+
     @Override
     public Tour readTourWithImage(String name) throws Exception {
         Tour tour = read(name);
@@ -164,7 +181,116 @@ public class BasicTourDAO implements TourDAO {
         tour.setImage(Base64.getEncoder().encodeToString(mapQuestRes.getValue3()));
         tour.setTourLogs(tourLogDao.readAll(tour.getName()));
 
+        insertDistanceAndTime(name, mapQuestRes.getValue1(), mapQuestRes.getValue2());
+
         return tour;
+    }
+
+    @Override
+    public Tour[] readAll() throws Exception {
+        List<Tour> tours = new ArrayList<>();
+        try (Connection con = db.connect()) {
+            String query = "SELECT t_name, t_description, t_from, t_to, t_transport_type, t_distance, t_est_time, t_route_info, t_id FROM tours";
+            PreparedStatement ps = con.prepareStatement(query);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Tour tour = new Tour(
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getDouble(6),
+                        rs.getLong(7),
+                        rs.getString(5),
+                        rs.getString(8),
+                        ""
+                );
+                tour.setTourLogs(tourLogDao.readAll(tour.getName()));
+                tour.setId(rs.getInt(9));
+
+                tours.add(tour);
+            }
+
+
+            rs.close();
+            return tours.toArray(new Tour[]{});
+        } catch (SQLException e) {
+            throw e;
+        }
+    }
+
+    public void createAll(Tour[] tours) throws Exception {
+        // clear data
+        try (Connection con = db.connect()) {
+            String query = "DELETE FROM logs";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.execute();
+            query = "DELETE FROM tours";
+            ps = con.prepareStatement(query);
+            ps.execute();
+        } catch (SQLException e) {
+            throw e;
+        }
+
+        for (Tour tour : tours) {
+            try (Connection con = db.connect()) {
+                String query = "INSERT INTO tours (t_name, t_description, t_from, t_to, t_transport_type, t_distance, t_est_time, t_route_info, t_map, t_id) VALUES (?,?,?,?,?,?,?,?,'',?)";
+                PreparedStatement ps = con.prepareStatement(query);
+                ps.setString(1, tour.getName());
+                ps.setString(2, tour.getDescription());
+                ps.setString(3, tour.getFrom());
+                ps.setString(4, tour.getTo());
+                ps.setString(5, tour.getTransportType());
+                ps.setDouble(6, tour.getDistance());
+                ps.setLong(7, tour.getEstTime());
+                ps.setString(8, tour.getRouteInfo());
+                ps.setInt(9, tour.getId());
+                fillPsWithTour(ps, tour);
+
+
+                ps.execute();
+
+                if (ps.getUpdateCount() <= 0) {
+                    throw new Exception("Can not add Tour");
+                }
+
+                tourLogDao.createAll(tour.getId(), tour.getTourLogs());
+            } catch (SQLException e) {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public String[] readTourNames(String filter) throws Exception {
+        filter = filter.replace("!", "!!")
+                .replace("%", "!%");
+        try(Connection con = db.connect()) {
+            String query = "SELECT t_name FROM tours WHERE " +
+                    "(t_name LIKE ? ESCAPE '!') OR " +
+                    "(t_description LIKE ? ESCAPE '!') OR " +
+                    "(t_from LIKE ? ESCAPE '!') OR " +
+                    "(t_to LIKE ? ESCAPE '!') OR " +
+                    "(t_transport_type LIKE ? ESCAPE '!') OR " +
+                    "(t_route_info LIKE ? ESCAPE '!') OR " +
+                    "0 < (SELECT COUNT(*) FROM logs WHERE l_comment LIKE ? ESCAPE '!')";
+            PreparedStatement ps = con.prepareStatement(query);
+            ps.setString(1, "%" + filter + "%");
+            ps.setString(2, "%" + filter + "%");
+            ps.setString(3, "%" + filter + "%");
+            ps.setString(4, "%" + filter + "%");
+            ps.setString(5, "%" + filter + "%");
+            ps.setString(6, "%" + filter + "%");
+            ps.setString(7, "%" + filter + "%");
+            ResultSet rs = ps.executeQuery();
+            List<String> tournames = new ArrayList<>();
+            while(rs.next()){
+                tournames.add(rs.getString(1));
+            }
+            rs.close();
+            return tournames.toArray(new String[]{});
+        }
     }
 
 }

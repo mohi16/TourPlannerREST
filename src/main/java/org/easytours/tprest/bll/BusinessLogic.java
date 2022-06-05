@@ -25,6 +25,11 @@ public interface BusinessLogic {
 
     //Report
     byte[] generateSingleReport(String tourName, Locale locale) throws Exception;
-    byte[] generateSummaryReport() throws Exception;
+    byte[] generateSummaryReport(Locale locale) throws Exception;
+
+    void importTours(Tour[] tours) throws Exception;
+    Tour[] exportTours() throws Exception;
+
+    String[] getTourNames(String filter) throws Exception;
 
 }

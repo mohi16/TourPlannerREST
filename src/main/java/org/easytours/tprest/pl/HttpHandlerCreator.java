@@ -160,6 +160,15 @@ public final class HttpHandlerCreator {
         };
     }
 
+    private String getSearchString(String query) {
+        if (null != query && query.contains("search=")) {
+            int idx = query.indexOf("search=") + 7;
+            return URLDecoder.decode(query.substring(idx,  Math.max(query.indexOf('&', idx), query.length())), StandardCharsets.UTF_8);
+        } else {
+            return null;
+        }
+    }
+
     public HttpHandler getTourNamesHandler() {
         return new HttpHandler() {
             @Override
@@ -174,7 +183,7 @@ public final class HttpHandlerCreator {
 
                 String[] tournames = null;
                 try {
-                    tournames = bl.getTourNames();
+                    tournames = bl.getTourNames(getSearchString(httpExchange.getRequestURI().getQuery()));
                 } catch (Exception e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
@@ -307,6 +316,7 @@ public final class HttpHandlerCreator {
             }
         };
     }
+
     public HttpHandler deleteTourLogHandler(){
         return new HttpHandler() {
             @Override
@@ -375,19 +385,18 @@ public final class HttpHandlerCreator {
     }
 
     private Locale getLocale(String query) {
-        if (null == query) {
+        if (null != query && query.contains("lang=")) {
+            int idx = query.indexOf("lang=") + 5;
+            String loc = URLDecoder.decode(query.substring(idx,  Math.max(query.indexOf('&', idx), query.length())), StandardCharsets.UTF_8);
+
+            if (Locale.GERMAN.getLanguage().equals(loc)) {
+                return Locale.GERMAN;
+            } else {
+                return Locale.ENGLISH;
+            }
+        } else {
             return Locale.ENGLISH;
         }
-        if (query.contains("lang=")) {
-            int idx = query.indexOf("lang=") + 5;
-            String loc = query.substring(idx,  Math.max(query.indexOf('&', idx), query.length()));
-
-            if ("de".equals(loc)) {
-                return Locale.GERMAN;
-            }
-        }
-
-        return Locale.ENGLISH;
     }
 
     public HttpHandler getSingleReportHandler(){
@@ -430,6 +439,106 @@ public final class HttpHandlerCreator {
                 httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), bytes.length);
                 OutputStream os = httpExchange.getResponseBody();
                 os.write(bytes);
+                os.close();
+            }
+        };
+    }
+
+    public HttpHandler getSummaryReportHandler(){
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET Summary Report");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                byte[] bytes;
+                try {
+                    bytes = bl.generateSummaryReport(getLocale(httpExchange.getRequestURI().getQuery()));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                httpExchange.getResponseHeaders().set("Content-Type", "application/pdf");
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), bytes.length);
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(bytes);
+                os.close();
+            }
+        };
+    }
+
+    public HttpHandler getImportHandler(){
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("POST Import");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.POST.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    bl.importTours(objectMapper.readValue(httpExchange.getRequestBody(), Tour[].class));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.CREATED.getCode(), -1);
+            }
+        };
+    }
+
+    public HttpHandler getExportHandler(){
+        return new HttpHandler() {
+            @Override
+            public void handle(HttpExchange httpExchange) throws IOException {
+                System.out.println("GET Export");
+
+                String method = httpExchange.getRequestMethod();
+                if (!HttpMethod.GET.name().equals(method)) {
+                    httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
+                    return;
+                }
+
+                Tour[] tours;
+                try {
+                    tours = bl.exportTours();
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    httpExchange.sendResponseHeaders(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), -1);
+                    return;
+                }
+                ObjectMapper objectMapper = new ObjectMapper();
+                String body = objectMapper.writeValueAsString(tours);
+
+                httpExchange.sendResponseHeaders(HttpStatusCode.OK.getCode(), body.length());
+                OutputStream os = httpExchange.getResponseBody();
+                os.write(body.getBytes());
                 os.close();
             }
         };

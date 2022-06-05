@@ -106,7 +106,27 @@ public class SimpleBusinessLogic implements BusinessLogic {
     }
 
     @Override
-    public byte[] generateSummaryReport() throws Exception {
-        return new byte[0];
+    public byte[] generateSummaryReport(Locale locale) throws Exception {
+        Tour[] tours = tourDao.readAll();
+        return reportGenerator.summaryReport(tours, locale);
+    }
+
+    @Override
+    public void importTours(Tour[] tours) throws Exception {
+        tourDao.createAll(tours);
+    }
+
+    @Override
+    public Tour[] exportTours() throws Exception {
+        return tourDao.readAll();
+    }
+
+    @Override
+    public String[] getTourNames(String filter) throws Exception {
+        if (null == filter) {
+            return tourDao.readTourNames();
+        } else {
+            return tourDao.readTourNames(filter);
+        }
     }
 }

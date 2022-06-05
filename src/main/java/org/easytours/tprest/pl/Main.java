@@ -12,6 +12,7 @@ import org.easytours.tprest.dal.dao.TourLogDAO;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Locale;
 
 public final class Main {
     public static void main(String[] args) throws IOException {
@@ -42,7 +43,9 @@ public final class Main {
         server.createContext("/editLog/", creator.editTourLogHandler());
         server.createContext("/logs/", creator.getTourLogHandler());
         server.createContext("/singleReport/", creator.getSingleReportHandler());
-//        server.createContext("/summaryReport/", creator.getSummaryReportHandler());
+        server.createContext("/summaryReport/", creator.getSummaryReportHandler());
+        server.createContext("/import/", creator.getImportHandler());
+        server.createContext("/export/", creator.getExportHandler());
 
         System.out.println("STARTING Server at " + server.getAddress().getAddress() + " with Port " + server.getAddress().getPort());
         server.start();

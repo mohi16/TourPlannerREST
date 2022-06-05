@@ -686,24 +686,25 @@ public class TestSimpleBusinessLogic {
         Tour tour = getTour();
         tour.setDistance(10.5);
         tour.setEstTime(1002);
+        Locale locale = Locale.ENGLISH;
         byte[] expectedBytes = new byte[] {0, 1, 2, 3};
         try {
             when(tourDao.readTourWithImage(tourname)).thenReturn(tour);
-            when(reportGenerator.singleReport(tour)).thenReturn(expectedBytes);
+            when(reportGenerator.singleReport(tour, locale)).thenReturn(expectedBytes);
         } catch (Exception e) {
             fail();
         }
 
         byte[] bytes = null;
         try {
-            bytes = bl.generateSingleReport(tourname);
+            bytes = bl.generateSingleReport(tourname, locale);
         } catch (Exception e) {
             fail();
         }
 
         try {
             verify(tourDao).readTourWithImage(tourname);
-            verify(reportGenerator).singleReport(tour);
+            verify(reportGenerator).singleReport(tour, locale);
         } catch (Exception e) {
             fail();
         }

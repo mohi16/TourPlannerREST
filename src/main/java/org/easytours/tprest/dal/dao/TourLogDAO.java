@@ -8,4 +8,6 @@ public interface TourLogDAO {
     void update(int id, TourLog newLog) throws Exception;
     void delete(int id) throws Exception;
     TourLog[] readAll(String tourName) throws Exception;
+
+    void createAll(int tourId, TourLog[] tourLogs) throws Exception;
 }

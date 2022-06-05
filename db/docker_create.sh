@@ -1,1 +1,3 @@
 #docker ...
+docker run --detach -e POSTGRES_USER=tpuser -e POSTGRES_PASSWORD=tppw --name=tourplanner -v data:/var/lib/postgresql/data -p 5432:5432 postgres
+

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel ="stylesheet" href="org/easytours/tprest/main.css" th:href="@{org/easytours/tprest/main.css}" ></link>
+</head>
+<body>
+    <h1 th:text="${_.get('Summary_Title')}"></h1>
+    <div th:each="t : ${tours}">
+        <h2 th:text="${t.getName()}"></h2>
+        <h3 th:text="${_.get('AverageTime')}"></h3>
+        <p th:text="${statCalculator.averageTime(t)}"></p>
+        <h3 th:text="${_.get('Rating')}"></h3>
+        <p th:text="${statCalculator.rating(t)}"></p>
+    </div>
+</body>
+</html>

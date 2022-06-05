@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <link rel ="stylesheet" href="/org/easytours/tprest/main.css"></link>
+    <link rel ="stylesheet" th:href="@{main.css}"></link>
 </head>
 <body>
-    <h1>lol</h1>
     <h1 th:text="${_.get('Single_Title')}"></h1>
     <h2 th:text="${_.get('TourName')}"></h2>
     <p th:text="${tour.getName()}"></p>
@@ -17,7 +16,7 @@
     <h2 th:text="${_.get('Distance')}"></h2>
     <p th:text="${tour.getDistance()}"></p>
     <h2 th:text="${_.get('EstTime')}"></h2>
-    <p th:text="${tour.getEstTime()}"></p>
+    <p th:text="${tour.getFormattedTime()}"></p>
     <h2 th:text="${_.get('TransportType')}"></h2>
     <p th:text="${tour.getTransportType()}"></p>
     <h2 th:text="${_.get('RouteInfo')}"></h2>

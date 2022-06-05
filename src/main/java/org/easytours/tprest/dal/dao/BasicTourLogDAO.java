@@ -156,6 +156,33 @@ public class BasicTourLogDAO implements TourLogDAO {
         return tourLogs.toArray(new TourLog[]{});
     }
 
+    public void createAll(int tourId, TourLog[] tourLogs) throws Exception {
+        int id = tourId;
+
+        for (TourLog tourLog: tourLogs) {
+            try (Connection con = db.connect()) {
+                String query = "INSERT INTO logs (l_date, l_comment, l_difficulty, l_total_time, l_rating, t_id) VALUES (?,?,?,?,?,?) RETURNING l_id";
+                PreparedStatement ps = con.prepareStatement(query);
+                ps.setString(1, tourLog.getDateTime());
+                ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse(tourLog.getDateTime(), DateTimeFormatter.ofPattern("d.M.y H:m:s"))));
+                ps.setString(2, tourLog.getComment());
+                ps.setInt(3, tourLog.getDifficulty());
+                ps.setLong(4, tourLog.getTotalTime());
+                ps.setInt(5, tourLog.getRating());
+                ps.setInt(6, id);
+
+                ResultSet rs = ps.executeQuery();
+
+                if (!rs.next()) {
+                    throw new Exception("Can not add Tour Log");
+                }
+                rs.close();
+            } catch (SQLException e) {
+                throw e;
+            }
+        }
+    }
+
     public String convertDbTimeStampToString(String dbDateTime){
         return LocalDateTime.parse(dbDateTime, DateTimeFormatter.ofPattern("y-M-d H:m:s")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"));
     }

@@ -6,6 +6,7 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.lowagie.text.DocumentException;
 import org.easytours.tpmodel.Tour;
+import org.easytours.tprest.utils.StatCalculator;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
@@ -48,6 +49,25 @@ public class ReportGenerator {
         return templateEngine.process(resource, context);
     }
 
+    private String parseHTMLSummary(String resource, Tour[] tours, Locale locale) {
+        //resource = "org/easytours/tprest/" + resource;
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("org/easytours/tprest/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+
+        TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+
+        Context context = new Context();
+        context.setVariable("tours", tours);
+        context.setVariable("statCalculator", new StatCalculator());
+
+        context.setVariable("_", new Localizer(locale));
+
+        return templateEngine.process(resource, context);
+    }
+
     private byte[] generatePdfFromHTML(String html) throws DocumentException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ITextRenderer renderer = new ITextRenderer();
@@ -76,7 +96,7 @@ public class ReportGenerator {
         return byteArrayOutputStream.toByteArray();*/
     }
 
-    public byte[] summaryReport(Tour[] tours) {
-        return null;
+    public byte[] summaryReport(Tour[] tours, Locale locale) throws DocumentException {
+        return generatePdfFromHTML(parseHTMLSummary("summary_report", tours, locale));
     }
 }

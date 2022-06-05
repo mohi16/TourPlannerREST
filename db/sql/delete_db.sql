@@ -1,2 +1,2 @@
---DELETE FROM tour_logs;
---DELETE FROM tours;
+DELETE FROM logs;
+DELETE FROM tours;
