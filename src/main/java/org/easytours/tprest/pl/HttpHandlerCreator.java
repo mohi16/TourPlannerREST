@@ -14,7 +14,9 @@ import org.easytours.tpmodel.Tour;
 import org.easytours.tpmodel.TourLog;
 import org.easytours.tpmodel.http.HttpMethod;
 import org.easytours.tpmodel.http.HttpStatusCode;
+import org.easytours.tpmodel.logging.LoggerFactory;
 import org.easytours.tprest.bll.BusinessLogic;
+import org.easytours.tprest.dal.logging.LogManager;
 import org.easytours.tprest.utils.Pair;
 
 import java.io.*;
@@ -30,13 +32,19 @@ public final class HttpHandlerCreator {
         this.bl = bl;
     }
 
+    private void logMethod(String method, String route) {
+        LogManager.getLogger().info("HTTP Request incoming on: " + method + " " + route);
+    }
+
     public HttpHandler addTourHandler() {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("ADD Tour");
+
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.POST.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -65,16 +73,18 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("DELETE Tour");
+
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.DELETE.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
                 }
 
                 try {
-                    bl.deleteTour(processPathString(httpExchange.getRequestURI().getPath(), "/delete/"));
+                    bl.deleteTour(processPathString(route, "/delete/"));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -94,9 +104,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("EDIT Tour");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.PUT.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -105,7 +116,7 @@ public final class HttpHandlerCreator {
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
                     bl.editTour(
-                            processPathString(httpExchange.getRequestURI().getPath(), "/edit/"),
+                            processPathString(route, "/edit/"),
                             objectMapper.readValue(httpExchange.getRequestBody(), Tour.class)
                     );
                 } catch (IllegalArgumentException e) {
@@ -127,9 +138,9 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET Tour");
-
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -137,9 +148,7 @@ public final class HttpHandlerCreator {
 
                 Tour tour = null;
                 try {
-                    String decode = processPathString(httpExchange.getRequestURI().getPath(), "/tours/");
-                    System.out.println(decode);
-                    tour = bl.getTour(processPathString(httpExchange.getRequestURI().getPath(), "/tours/"));
+                    tour = bl.getTour(processPathString(route, "/tours/"));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -173,9 +182,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET TourNames");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -183,6 +193,9 @@ public final class HttpHandlerCreator {
 
                 String[] tournames = null;
                 try {
+                    String query = httpExchange.getRequestURI().getQuery();
+                    LogManager.getLogger().debug("search query: " + query);
+                    LogManager.getLogger().debug("processed query: " + getSearchString(query));
                     tournames = bl.getTourNames(getSearchString(httpExchange.getRequestURI().getQuery()));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -205,9 +218,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET TourWithImage");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -216,9 +230,7 @@ public final class HttpHandlerCreator {
 
                 Tour tour = null;
                 try {
-                    String decode = processPathString(httpExchange.getRequestURI().getPath(), "/tourimage/");
-                    System.out.println(decode);
-                    tour = bl.getTourWithImage(processPathString(httpExchange.getRequestURI().getPath(), "/tourimage/"));
+                    tour = bl.getTourWithImage(processPathString(route, "/tourimage/"));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -251,9 +263,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("ADD Tourlog");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.POST.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -262,7 +275,7 @@ public final class HttpHandlerCreator {
                 ObjectMapper objectMapper = new ObjectMapper();
                 int id;
                 try {
-                    id = bl.addTourLog(processPathString(httpExchange.getRequestURI().getPath(),"/addLog/"), objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class));
+                    id = bl.addTourLog(processPathString(route,"/addLog/"), objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -288,9 +301,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("EDIT Tour");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.PUT.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -299,7 +313,7 @@ public final class HttpHandlerCreator {
                 ObjectMapper objectMapper = new ObjectMapper();
                 try {
                     bl.editTourLog(
-                            Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/editLog/")),
+                            Integer.parseInt(processPathString(route, "/editLog/")),
                             objectMapper.readValue(httpExchange.getRequestBody(), TourLog.class)
                     );
                 } catch (IllegalArgumentException e) {
@@ -321,16 +335,17 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("DELETE Tour");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.DELETE.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
                 }
 
                 try {
-                    bl.deleteTourLog(Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/deleteLog/")));
+                    bl.deleteTourLog(Integer.parseInt(processPathString(route, "/deleteLog/")));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -351,9 +366,10 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET Tour");
 
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -361,9 +377,7 @@ public final class HttpHandlerCreator {
 
                 TourLog tourLog = null;
                 try {
-                    String decode = processPathString(httpExchange.getRequestURI().getPath(), "/logs/");
-                    System.out.println(decode);
-                    tourLog = bl.getTourLog(Integer.parseInt(processPathString(httpExchange.getRequestURI().getPath(), "/logs/")));
+                    tourLog = bl.getTourLog(Integer.parseInt(processPathString(route, "/logs/")));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -403,9 +417,9 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET Single Report");
-
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -421,7 +435,7 @@ public final class HttpHandlerCreator {
                 doc.close();*/
                 byte[] bytes;
                 try {
-                    bytes = bl.generateSingleReport(processPathString(httpExchange.getRequestURI().getPath(), "/singleReport/"), getLocale(httpExchange.getRequestURI().getQuery()));
+                    bytes = bl.generateSingleReport(processPathString(route, "/singleReport/"), getLocale(httpExchange.getRequestURI().getQuery()));
                 } catch (IllegalArgumentException e) {
                     e.printStackTrace();
                     httpExchange.sendResponseHeaders(HttpStatusCode.BAD_REQUEST.getCode(), -1);
@@ -448,9 +462,9 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET Summary Report");
-
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -483,9 +497,9 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("POST Import");
-
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.POST.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;
@@ -513,9 +527,9 @@ public final class HttpHandlerCreator {
         return new HttpHandler() {
             @Override
             public void handle(HttpExchange httpExchange) throws IOException {
-                System.out.println("GET Export");
-
                 String method = httpExchange.getRequestMethod();
+                String route = httpExchange.getRequestURI().getPath();
+                logMethod(method, route);
                 if (!HttpMethod.GET.name().equals(method)) {
                     httpExchange.sendResponseHeaders(HttpStatusCode.NOT_ALLOWED.getCode(), -1);
                     return;

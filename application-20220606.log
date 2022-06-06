@@ -1,0 +1,21 @@
+2022-06-06 11:06:27.894 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: POST /add/
+2022-06-06 11:27:39.450 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:28:04.068 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:29:36.656 [main] INFO  org.easytours.tpmodel.logging.Log4JWrapper - Starting Server at /0:0:0:0:0:0:0:0 on Port 5001
+2022-06-06 11:30:05.215 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:30:17.514 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tourimage/Tourname/
+2022-06-06 11:30:37.943 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /singleReport/Tourname/
+2022-06-06 11:31:08.733 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /summaryReport/
+2022-06-06 11:31:23.293 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /export/
+2022-06-06 11:32:02.084 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: POST /import/
+2022-06-06 11:32:02.184 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:32:04.286 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tourimage/Tourname2/
+2022-06-06 11:33:55.990 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:01.136 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:11.031 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:14.589 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:23.942 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:28.635 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:34:32.456 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:35:01.468 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/
+2022-06-06 11:37:18.545 [HTTP-Dispatcher] INFO  org.easytours.tpmodel.logging.Log4JWrapper - HTTP Request incoming on: GET /tournames/

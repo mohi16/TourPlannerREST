@@ -1,6 +1,9 @@
 package org.easytours.tprest.pl;
 
 import com.sun.net.httpserver.HttpServer;
+import org.apache.logging.log4j.Logger;
+import org.easytours.tpmodel.logging.LoggerFactory;
+import org.easytours.tpmodel.logging.LoggerWrapper;
 import org.easytours.tprest.bll.ReportGenerator;
 import org.easytours.tprest.bll.SimpleBusinessLogic;
 import org.easytours.tprest.config.Config;
@@ -9,6 +12,7 @@ import org.easytours.tprest.dal.dao.BasicTourDAO;
 import org.easytours.tprest.dal.dao.BasicTourLogDAO;
 import org.easytours.tprest.dal.dao.TourDAO;
 import org.easytours.tprest.dal.dao.TourLogDAO;
+import org.easytours.tprest.dal.logging.LogManager;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -47,8 +51,7 @@ public final class Main {
         server.createContext("/import/", creator.getImportHandler());
         server.createContext("/export/", creator.getExportHandler());
 
-        System.out.println("STARTING Server at " + server.getAddress().getAddress() + " with Port " + server.getAddress().getPort());
+        LogManager.getLogger().info("Starting Server at " + server.getAddress().getAddress() + " on Port " + server.getAddress().getPort());
         server.start();
-        System.out.println("AFTER Start");
     }
 }
