@@ -14,13 +14,33 @@ import org.easytours.tprest.dal.dao.TourDAO;
 import org.easytours.tprest.dal.dao.TourLogDAO;
 import org.easytours.tprest.dal.logging.LogManager;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Locale;
 
 public final class Main {
     public static void main(String[] args) throws IOException {
-        Config.load();
+        try {
+            LogManager.getLogger().info("Attempt to load config...");
+            Config.load();
+            LogManager.getLogger().info("Config loaded");
+        } catch(IOException e){
+            BufferedWriter bw = new BufferedWriter(new FileWriter("./appconfig.yaml"));
+            bw.write("""
+                    port: 5001
+                    db:
+                      host: jdbc:postgresql://localhost:5432/tpdb
+                      user: user
+                      password: tp
+                    mapquestStaticMapUrl: https://www.mapquestapi.com/staticmap/v5/map
+                    mapquestDirectionsUrl: http://www.mapquestapi.com/directions/v2/route
+                    mapquestApiKey: key""");
+            bw.close();
+            LogManager.getLogger().info("Config file created, Please fill out missing fields.");
+            return;
+        }
         Database db = null;
         try {
             db = new Database();
@@ -51,7 +71,7 @@ public final class Main {
         server.createContext("/import/", creator.getImportHandler());
         server.createContext("/export/", creator.getExportHandler());
 
-        LogManager.getLogger().info("Starting Server at " + server.getAddress().getAddress() + " on Port " + server.getAddress().getPort());
         server.start();
+        LogManager.getLogger().info("Server running at " + server.getAddress().getAddress() + " on Port " + server.getAddress().getPort());
     }
 }

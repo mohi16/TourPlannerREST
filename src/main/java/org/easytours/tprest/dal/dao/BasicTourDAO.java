@@ -4,6 +4,7 @@ import org.easytours.tpmodel.Tour;
 import org.easytours.tpmodel.utils.Triple;
 import org.easytours.tprest.dal.Database;
 import org.easytours.tprest.dal.http.HttpHandler;
+import org.easytours.tprest.dal.logging.LogManager;
 import org.easytours.tprest.utils.Pair;
 
 import java.nio.charset.StandardCharsets;
@@ -62,6 +63,7 @@ public class BasicTourDAO implements TourDAO {
             ps.execute();
 
             if (ps.getUpdateCount() <= 0) {
+                LogManager.getLogger().error("Can not add tour");
                 throw new Exception("Can not add Tour");
             }
         } catch (SQLException e) {
@@ -79,6 +81,7 @@ public class BasicTourDAO implements TourDAO {
 
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
+                LogManager.getLogger().error("Can not get tour");
                 throw new Exception("Cannot get tour");
             }
             Tour tour = new Tour(
@@ -116,6 +119,7 @@ public class BasicTourDAO implements TourDAO {
             ps.setString(9, name);
             ps.execute();
             if (ps.getUpdateCount() <= 0) {
+                LogManager.getLogger().error("Can not edit tour");
                 throw new Exception("Can not edit Tour");
             }
         }
@@ -132,6 +136,7 @@ public class BasicTourDAO implements TourDAO {
             ps.setString(1, name);
             ps.execute();
             if (ps.getUpdateCount() <= 0) {
+                LogManager.getLogger().error("Can not delete tour");
                 throw new Exception("Can not delete Tour");
             }
         }
@@ -164,6 +169,7 @@ public class BasicTourDAO implements TourDAO {
             ps.setString(3, tourname);
             ps.execute();
             if (ps.getUpdateCount() <= 0) {
+                LogManager.getLogger().error("Can not edit tour");
                 throw new Exception("Can not edit Tour");
             }
         }
@@ -252,6 +258,7 @@ public class BasicTourDAO implements TourDAO {
                 ps.execute();
 
                 if (ps.getUpdateCount() <= 0) {
+                    LogManager.getLogger().error("Can not add tour");
                     throw new Exception("Can not add Tour");
                 }
 
@@ -264,17 +271,18 @@ public class BasicTourDAO implements TourDAO {
 
     @Override
     public String[] readTourNames(String filter) throws Exception {
-        filter = filter.replace("!", "!!")
-                .replace("%", "!%");
+        filter = filter.replace("%", "!%")
+                .replace("*", "%");
+
         try(Connection con = db.connect()) {
             String query = "SELECT t_name FROM tours WHERE " +
-                    "(t_name LIKE ? ESCAPE '!') OR " +
-                    "(t_description LIKE ? ESCAPE '!') OR " +
-                    "(t_from LIKE ? ESCAPE '!') OR " +
-                    "(t_to LIKE ? ESCAPE '!') OR " +
-                    "(t_transport_type LIKE ? ESCAPE '!') OR " +
-                    "(t_route_info LIKE ? ESCAPE '!') OR " +
-                    "0 < (SELECT COUNT(*) FROM logs WHERE l_comment LIKE ? ESCAPE '!')";
+                    "(UPPER(t_name) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "(UPPER(t_description) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "(UPPER(t_from) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "(UPPER(t_to) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "(UPPER(t_transport_type) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "(UPPER(t_route_info) LIKE UPPER(?) ESCAPE '!') OR " +
+                    "0 < (SELECT COUNT(*) FROM logs WHERE UPPER(l_comment) LIKE UPPER(?) ESCAPE '!')";
             PreparedStatement ps = con.prepareStatement(query);
             ps.setString(1, "%" + filter + "%");
             ps.setString(2, "%" + filter + "%");

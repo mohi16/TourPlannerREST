@@ -6,6 +6,7 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import com.lowagie.text.DocumentException;
 import org.easytours.tpmodel.Tour;
+import org.easytours.tprest.dal.logging.LogManager;
 import org.easytours.tprest.utils.StatCalculator;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -79,6 +80,7 @@ public class ReportGenerator {
     }
 
     public byte[] singleReport(Tour tour, Locale locale) throws DocumentException {
+        LogManager.getLogger().info("Generate single report for tour: " + tour.getName());
         return generatePdfFromHTML(parseHTMLSingle("single_report", tour, locale));
         /*ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(byteArrayOutputStream);
@@ -97,6 +99,7 @@ public class ReportGenerator {
     }
 
     public byte[] summaryReport(Tour[] tours, Locale locale) throws DocumentException {
+        LogManager.getLogger().info("Generate summary report");
         return generatePdfFromHTML(parseHTMLSummary("summary_report", tours, locale));
     }
 }

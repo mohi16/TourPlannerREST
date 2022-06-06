@@ -1,6 +1,7 @@
 package org.easytours.tprest.dal;
 
 import org.easytours.tprest.config.Config;
+import org.easytours.tprest.dal.logging.LogManager;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
