@@ -1,8 +1,0 @@
-port: 5001
-db:
-  host: jdbc:postgresql://localhost:5432/tpdb
-  user: tpuser
-  password: tppw
-mapquestStaticMapUrl: https://www.mapquestapi.com/staticmap/v5/map
-mapquestDirectionsUrl: http://www.mapquestapi.com/directions/v2/route
-mapquestApiKey: 7K94CELnGaBrhzwvOiqgtYGAgX4HQBuA
